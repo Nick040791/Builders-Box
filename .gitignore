@@ -31,3 +31,8 @@ backend/target
 
 .fake
 
+# JMeter performance test artifacts (see perf/README.md)
+perf/results/
+perf/report-*/
+!perf/report-50u-final/
+
