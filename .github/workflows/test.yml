@@ -27,6 +27,14 @@ jobs:
         working-directory: backend
         run: mvn clean verify
 
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-report
+          path: backend/target/site/jacoco/
+          if-no-files-found: warn
+
   frontend-tests-build:
     runs-on: ubuntu-latest
 
@@ -52,3 +60,78 @@ jobs:
       - name: Build frontend production bundle
         working-directory: frontend
         run: npm run build
+
+  perf-smoke:
+    runs-on: ubuntu-latest
+    needs: backend-tests
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci_only_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci_only_password"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
+    env:
+      DB_URL: jdbc:mysql://127.0.0.1:3306/flexpath_final
+      DB_USERNAME: root
+      DB_PASSWORD: ci_only_password
+      JMETER_VERSION: 5.6.3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Load schema and load-test seed data
+        run: |
+          mysql -h 127.0.0.1 -uroot -p"$DB_PASSWORD" < database/create-database.sql
+          mysql -h 127.0.0.1 -uroot -p"$DB_PASSWORD" < perf/data/seed-loadtest.sql
+
+      - name: Package backend
+        working-directory: backend
+        run: mvn -B -q -DskipTests package
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup java -jar target/flexpath-final-project-server-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/profile || true)
+            if [ "$code" = "401" ] || [ "$code" = "403" ]; then echo "Backend up"; exit 0; fi
+            sleep 2
+          done
+          echo "Backend did not start"; cat app.log; exit 1
+
+      - name: Install JMeter
+        run: |
+          curl -sSfL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-jmeter-${JMETER_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Run JMeter smoke (5 users, 30s)
+        run: perf/run-perf.sh 5 30 5
+
+      - name: Check smoke results
+        run: python3 perf/check-results.py perf/results/*.jtl 2
+
+      - name: Upload JMeter HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-smoke-report
+          path: |
+            perf/report-*/
+            perf/results/
+            backend/app.log
+          if-no-files-found: warn

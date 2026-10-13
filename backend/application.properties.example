@@ -1,0 +1,8 @@
+# Copy values into environment variables (preferred) rather than committing secrets.
+# The app reads these placeholders from application.properties:
+#   DB_URL      (optional, defaults to jdbc:mysql://localhost:3306/flexpath_final)
+#   DB_USERNAME (required)
+#   DB_PASSWORD (required)
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/flexpath_final}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}

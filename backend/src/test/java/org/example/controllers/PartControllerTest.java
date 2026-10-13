@@ -413,4 +413,14 @@ class PartControllerTest {
         verify(partService)
                 .findMine("alice");
     }
+
+    @Test
+    void controller_requiresAuthenticatedUser() {
+        // Anonymous requests previously reached the controller with a null Authentication
+        // and failed with a NullPointerException (HTTP 500) instead of 401.
+        org.springframework.security.access.prepost.PreAuthorize pre =
+                PartController.class.getAnnotation(org.springframework.security.access.prepost.PreAuthorize.class);
+        org.junit.jupiter.api.Assertions.assertNotNull(pre);
+        org.junit.jupiter.api.Assertions.assertEquals("isAuthenticated()", pre.value());
+    }
 }

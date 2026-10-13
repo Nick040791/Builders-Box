@@ -7,6 +7,7 @@ import org.example.models.PageResult;
 import org.example.models.Part;
 import org.example.services.PartService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/parts")
+@PreAuthorize("isAuthenticated()")
 public class PartController {
 
     private final PartService partService;
