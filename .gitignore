@@ -31,3 +31,10 @@ backend/target
 
 .fake
 
+
+# Editor workspace files
+*.code-workspace
+
+# JMeter outputs
+perf/results/
+perf/report-*/
