@@ -38,3 +38,4 @@ backend/target
 # JMeter outputs
 perf/results/
 perf/report-*/
+agent-summary.md
