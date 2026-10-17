@@ -10,11 +10,9 @@ docker build --pull --rm -f Dockerfile -t builders-box .
 
 ```bash
 docker run -it --rm \
-  -v "$HOME/EDU/HireHuman/Builders-Box:/workspace" \
+  -v "${PWD}:/workspace" \
+  -v "claude-auth:/claude-auth" \
   -w /workspace \
-  -p 8080:8080 \
-  -p 5173:5173 \
-  --network bridge \
   builders-box
 ```
 

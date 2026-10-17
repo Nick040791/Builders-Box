@@ -40,9 +40,12 @@ RUN curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
     | tee /etc/apt/sources.list.d/ngrok.list \
     && apt-get update && apt-get install -y ngrok \
     && rm -rf /var/lib/apt/lists/*
-
+    
 # Claude Code configuration: default settings + status line
 RUN mkdir -p /root/.claude
+COPY /home/mrnicholas/.claude/settings.json ./settings.json
+COPY /home/mrnicholas/.orca/agent-hooks/claude-statusline.sh ./claude-statusline.sh
+RUN chmod +x /root/.claude/claude-statusline.sh
 
 # Student shell quality-of-life improvements
 RUN echo 'export PS1="ai-course:\\w# "' >> /root/.bashrc && \
