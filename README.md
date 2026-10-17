@@ -19,6 +19,27 @@
 5. Open a browser and navigate to localhost:5173, login with admin:admin, user:admin, or guest_builder:admin (all passwords are the same for demonstration)
 
 
+## Docker / Dev Container
+
+A `Dockerfile` provides a dev environment with Java 17, Maven, Node, the MySQL client, and Claude Code. Full details, including the MySQL user setup, the smoke test, and security notes, are in [setup.md](setup.md).
+
+Minimal start commands (run from the repo root on the host):
+
+```bash
+docker build --pull --rm -f Dockerfile -t builders-box .
+
+docker run -it --rm \
+  -v "$(pwd):/workspace" \
+  -w /workspace \
+  -p 8080:8080 \
+  -p 5173:5173 \
+  --network bridge \
+  builders-box
+```
+
+Inside the container, set `DB_USERNAME` and `DB_PASSWORD`. Set `DB_URL` to `jdbc:mysql://host.docker.internal:3306/flexpath_final` so the backend can reach MySQL running on the host (on Linux, use the host IP or `--add-host`). Then follow [Start the application](#start-the-application) from step 3.
+
+
 ## Run the unit tests
 
 ** Backend
