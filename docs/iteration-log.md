@@ -16,7 +16,7 @@
 
 | **Result Note** | 4 on every dimension (dimension floor met) |
 
-| **Review Latency** | [fill in your time] |
+| **Review Latency** | 08m11.002s
 
 ## Command / Prompt
 
