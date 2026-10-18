@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     openjdk-17-jdk \
     maven \
+    jest \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,6 +27,9 @@ RUN JAVA_HOME_PATH="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")"
 # Also set for non-login shells
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# Install Jest
+RUN npm install jest
 
 # Install Claude Code
 RUN npm install -g @anthropic-ai/claude-code
