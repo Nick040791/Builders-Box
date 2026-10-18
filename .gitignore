@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
+
 .env
 
 backend/.idea
@@ -30,6 +31,8 @@ backend/target
 /frontend/coverage
 
 .fake
+
+google_cred.json
 
 
 # Editor workspace files
@@ -39,3 +42,5 @@ backend/target
 perf/results/
 perf/report-*/
 agent-summary.md
+
+
