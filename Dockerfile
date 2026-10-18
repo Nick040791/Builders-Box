@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     npm \
     openjdk-17-jdk \
     maven \
-    jest \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
