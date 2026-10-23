@@ -20,6 +20,22 @@ docker run -it --rm \
 - **Network mode**: default `bridge` (outbound allowed; no host network, no extra published ports beyond 8080/5173)
 - **User**: container runs as root (base image default). No additional capabilities or privileged mode.
 
+### Claude Code auth persistence
+
+Claude Code stores its OAuth credentials in `~/.claude/.credentials.json` (note the leading dot on `.credentials.json` — it is a hidden file). The container's entrypoint links `/root/.claude/.credentials.json` to `/claude-auth/.credentials.json`, so credentials you create inside the container persist across rebuilds in the `claude-auth` named volume. Authenticate once inside the container with `claude` and the login survives.
+
+Alternative — reuse the host's existing login inside the container (shares host auth and writes token refreshes back to the host):
+
+```bash
+docker run -it --rm \
+  -v "${PWD}:/workspace" \
+  -v "$HOME/.claude/.credentials.json:/root/.claude/.credentials.json" \
+  -w /workspace \
+  builders-box
+```
+
+Note this exposes that single credential file to the container, unlike the baseline below.
+
 ## Local MySQL (host)
 
 ```sql

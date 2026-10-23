@@ -43,13 +43,29 @@ RUN curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
     | tee /etc/apt/sources.list.d/ngrok.list \
     && apt-get update && apt-get install -y ngrok \
     && rm -rf /var/lib/apt/lists/*
-    
+
+# Install GitHub CLI (gh) from the official apt repo (used by the pr-summary agent)
+RUN mkdir -p -m 755 /etc/apt/keyrings \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+    -o /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+    > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
 # Claude Code configuration: default settings + status line
 # (sources are relative to the build context, i.e. the repo root)
 RUN mkdir -p /root/.claude /root/.orca/agent-hooks
 COPY .claude/settings.json /root/.claude/settings.json
 COPY .orca/agent-hooks/claude-statusline.sh /root/.orca/agent-hooks/claude-statusline.sh
 RUN chmod +x /root/.orca/agent-hooks/claude-statusline.sh
+
+# Entrypoint persists Claude Code credentials in the `claude-auth` volume
+# while keeping the baked-in settings/hooks in /root/.claude.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Student shell quality-of-life improvements
 RUN echo 'export PS1="ai-course:\\w# "' >> /root/.bashrc && \

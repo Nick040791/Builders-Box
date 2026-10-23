@@ -62,6 +62,7 @@ Specialist subagents live in `.claude/agents/`:
 | `devops` | sonnet | Dockerfile, CI workflows, env vars, scripts | business logic |
 | `backend-qa` | opus | read-only backend rubric gate (D1–D6 PASS/FAIL) | any edits |
 | `backend-test-engineer` | sonnet | closing `backend-qa` gaps with tests | production code |
+| `pr-summary` | sonnet | read-only one-paragraph-per-PR summaries (what/why) | any file writes or mutating `gh` commands |
 
 `backend-qa` and `backend-test-engineer` are Claude versions of the Copilot agents in `.github/agents/`. If you change one version, change the other to match.
 
