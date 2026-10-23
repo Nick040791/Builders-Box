@@ -34,6 +34,11 @@ backend/target
 
 google_cred.json
 
+# Local-only Claude Code / ORCA configuration (not for repo or image sharing)
+/.claude/settings.json
+/.claude/settings.json.bak
+/.orca/
+
 
 # Editor workspace files
 *.code-workspace
