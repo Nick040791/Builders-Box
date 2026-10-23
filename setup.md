@@ -8,6 +8,8 @@ docker build --pull --rm -f Dockerfile -t builders-box .
 
 ## Run
 
+Baseline (persistent Claude credentials in the `claude-auth` volume):
+
 ```bash
 docker run -it --rm \
   -v "${PWD}:/workspace" \
@@ -16,7 +18,32 @@ docker run -it --rm \
   builders-box
 ```
 
+Full dev run (reuse host Claude auth, pass the GitHub token from `.env`,
+and register the repo's Claude specialist agents globally inside the container):
+
+One-shot (handles port conflicts automatically):
+
+```bash
+./run.sh
+```
+
+Equivalent manual command (ensure no trailing spaces after `\`):
+
+```bash
+GH_TOKEN="$(sed -n 's/^GH_TOKEN=//p' .env)" docker run -it --rm \
+  -v "${PWD}:/workspace" \
+  -v "${HOME}/.claude/.credentials.json:/root/.claude/.credentials.json" \
+  -v "${PWD}/.claude/agents:/root/.claude/agents" \
+  -e GH_TOKEN \
+  -w /workspace \
+  -p 8080:8080 -p 5173:5173 \
+  builders-box
+```
+
 - **Mounted path**: only `~/EDU/HireHuman/Builders-Box` → `/workspace`
+- **Claude auth**: the host's `~/.claude/.credentials.json` is bind-mounted (read/write, so token refreshes land on the host). The entrypoint detects the bind mount and leaves it in place.
+- **GitHub token**: `GH_TOKEN` is taken from `.env` and exposed to `gh`/git inside the container. No other `.env` values are passed.
+- **Claude agents**: `.claude/agents/*.md` are bind-mounted to `/root/.claude/agents`, so the specialist agents (orchestrator, data-layer, frontend, etc.) are registered for Claude Code inside the container in addition to being discovered from `/workspace`.
 - **Network mode**: default `bridge` (outbound allowed; no host network, no extra published ports beyond 8080/5173)
 - **User**: container runs as root (base image default). No additional capabilities or privileged mode.
 
